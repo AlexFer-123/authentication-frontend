@@ -9,6 +9,11 @@ export default {
     Input,
     Label,
   },
+  methods: {
+    handleLogin() {
+      this.$router.push('/dashboard')
+    },
+  },
 }
 </script>
 <template>
@@ -35,7 +40,7 @@ export default {
             </div>
             <Input id="password" type="password" required />
           </div>
-          <Button type="submit" class="w-full"> Entrar </Button>
+          <Button type="submit" class="w-full" @click="handleLogin"> Entrar </Button>
           <Button variant="outline" class="w-full"> Entrar com Google </Button>
         </div>
         <div class="mt-4 text-center text-sm">
