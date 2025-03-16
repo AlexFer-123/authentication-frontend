@@ -1,4 +1,4 @@
-<script lang="js">
+<script lang="ts">
 import { Button } from '@/components/ui/button/index'
 import { Input } from '@/components/ui/input/index'
 import { Label } from '@/components/ui/label/index'

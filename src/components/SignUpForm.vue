@@ -1,31 +1,30 @@
-<script lang="js">
+<script setup lang="ts">
 import { Button } from '@/components/ui/button/index'
 import { Input } from '@/components/ui/input/index'
 import { Label } from '@/components/ui/label/index'
+import { ref } from 'vue'
 
-export default {
-  name: 'SignUpForm',
-  components: {
-    Button,
-    Input,
-    Label,
-  },
-  data() {
-    return {
-      formData: {
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-      },
-    }
-  },
-  methods: {
-    handleSubmit() {
-      console.log('Form submitted:', this.formData)
-    },
-  },
+interface FormData {
+  name: string
+  email: string
+  password: string
+  confirmPassword: string
 }
+
+const formData = ref<FormData>({
+  name: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+})
+
+const handleSubmit = () => {
+  console.log('Form submitted:', formData.value)
+}
+
+defineOptions({
+  name: 'SignUpForm',
+})
 </script>
 
 <template>
