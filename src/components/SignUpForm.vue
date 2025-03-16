@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts">
 import { Button } from '@/components/ui/button/index'
 import { Input } from '@/components/ui/input/index'
 import { Label } from '@/components/ui/label/index'
@@ -11,20 +11,31 @@ interface FormData {
   confirmPassword: string
 }
 
-const formData = ref<FormData>({
-  name: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-})
-
-const handleSubmit = () => {
-  console.log('Form submitted:', formData.value)
-}
-
-defineOptions({
+export default {
   name: 'SignUpForm',
-})
+  components: {
+    Button,
+    Input,
+    Label,
+  },
+  setup() {
+    const formData = ref<FormData>({
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    })
+
+    const handleSubmit = () => {
+      console.log('Form submitted:', formData.value)
+    }
+
+    return {
+      formData,
+      handleSubmit,
+    }
+  },
+}
 </script>
 
 <template>
