@@ -1,17 +1,36 @@
 <script lang="ts">
-import { Button } from '@/components/ui/button/index'
-import { Input } from '@/components/ui/input/index'
-import { Label } from '@/components/ui/label/index'
+import { Button as ShadcnButton } from '@/components/ui/button/index'
+import { Input as ShadcnInput } from '@/components/ui/input/index'
+import { Label as ShadcnLabel } from '@/components/ui/label/index'
+import { authService } from '@/services'
+
 export default {
   name: 'LoginForm',
   components: {
-    Button,
-    Input,
-    Label,
+    ShadcnButton,
+    ShadcnInput,
+    ShadcnLabel,
+  },
+  data() {
+    return {
+      email: '',
+      password: '',
+    }
   },
   methods: {
-    handleLogin() {
-      this.$router.push('/dashboard')
+    async handleLogin() {
+      try {
+        const email = this.email
+        const password = this.password
+        const credentials = {
+          email,
+          password,
+        }
+        const response = await authService.login(credentials)
+        console.log(response)
+      } catch (error) {
+        console.log(error)
+      }
     },
   },
 }
@@ -28,20 +47,26 @@ export default {
         </div>
         <div class="grid gap-4">
           <div class="grid gap-2">
-            <Label for="email">E-mail</Label>
-            <Input id="email" type="email" placeholder="m@example.com" required />
+            <ShadcnLabel for="email">E-mail</ShadcnLabel>
+            <ShadcnInput
+              id="email"
+              type="email"
+              placeholder="m@example.com"
+              required
+              v-model="email"
+            />
           </div>
           <div class="grid gap-2">
             <div class="flex items-center">
-              <Label for="password">Senha</Label>
+              <ShadcnLabel for="password">Senha</ShadcnLabel>
               <a href="/forgot-password" class="ml-auto inline-block text-sm underline">
                 Esqueceu sua senha?
               </a>
             </div>
-            <Input id="password" type="password" required />
+            <ShadcnInput id="password" type="password" required v-model="password" />
           </div>
-          <Button type="submit" class="w-full" @click="handleLogin"> Entrar </Button>
-          <Button variant="outline" class="w-full"> Entrar com Google </Button>
+          <ShadcnButton type="submit" class="w-full" @click="handleLogin"> Entrar </ShadcnButton>
+          <ShadcnButton variant="outline" class="w-full"> Entrar com Google </ShadcnButton>
         </div>
         <div class="mt-4 text-center text-sm">
           Não tem uma conta?
