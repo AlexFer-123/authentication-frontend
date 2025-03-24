@@ -13,11 +13,6 @@ interface FormData {
   confirmPassword: string
 }
 
-interface AuthResponse {
-  cause?: 'email_duplicate' | 'validation_error'
-  error?: string
-}
-
 export default {
   name: 'SignUpForm',
   components: {
@@ -36,7 +31,6 @@ export default {
 
     const showEmailError = ref(false)
     const showPasswordError = ref(false)
-    const apiError = ref('')
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     const isValidEmail = computed(() => {
@@ -70,7 +64,7 @@ export default {
       const handleErrors = {
         email_duplicate: 'Email já cadastrado',
         validation_error: 'Erro ao criar conta',
-      } as const
+      }
       try {
         if (!isFormValid.value) {
           throw new Error('Preencha todos os campos corretamente')
@@ -81,15 +75,19 @@ export default {
           email: formData.value.email,
           password: formData.value.password,
         }
-        const response = (await authService.signUp(data)) as AuthResponse
-        if (response.cause && handleErrors[response.cause]) {
-          apiError.value = handleErrors[response.cause]
+        const response = await authService.signUp(data)
+        if (handleErrors[response.cause]) {
           if (response.cause === 'email_duplicate') {
             setTimeout(() => {
-              router.push('/')
+              router.push({
+                path: '/',
+                query: {
+                  message: 'Email já cadastrado. Por favor, faça login com suas credenciais.',
+                },
+              })
             }, 2000)
           }
-          throw new Error(handleErrors[response.cause])
+          throw new Error(handleErrors[response.error])
         }
       } catch (error) {
         console.log(error, 'error')
@@ -106,7 +104,6 @@ export default {
       handleEmailBlur,
       handlePasswordBlur,
       isFormValid,
-      apiError,
     }
   },
 }
@@ -131,7 +128,6 @@ export default {
               v-model="formData.name"
               placeholder="Seu nome completo"
               required
-              :class="{ 'border-red-500': apiError }"
             />
           </div>
           <div class="grid gap-2">
@@ -142,7 +138,7 @@ export default {
               v-model="formData.email"
               placeholder="m@exemplo.com"
               required
-              :class="{ 'border-red-500': (showEmailError && !isValidEmail) || apiError }"
+              :class="{ 'border-red-500': showEmailError && !isValidEmail }"
               @blur="handleEmailBlur"
             />
             <p v-if="showEmailError && !isValidEmail" class="text-sm text-red-500">
@@ -156,7 +152,7 @@ export default {
               type="password"
               v-model="formData.password"
               required
-              :class="{ 'border-red-500': (showPasswordError && !passwordsMatch) || apiError }"
+              :class="{ 'border-red-500': showPasswordError && !passwordsMatch }"
               @blur="handlePasswordBlur"
             />
           </div>
@@ -167,14 +163,13 @@ export default {
               type="password"
               v-model="formData.confirmPassword"
               required
-              :class="{ 'border-red-500': (showPasswordError && !passwordsMatch) || apiError }"
+              :class="{ 'border-red-500': showPasswordError && !passwordsMatch }"
               @blur="handlePasswordBlur"
             />
             <p v-if="showPasswordError && !passwordsMatch" class="text-sm text-red-500">
               As senhas devem ser iguais
             </p>
           </div>
-          <p v-if="apiError" class="text-sm text-red-500 text-center">{{ apiError }}</p>
           <ShadcnButton type="submit" class="w-full" :disabled="!isFormValid">
             Criar Conta
           </ShadcnButton>

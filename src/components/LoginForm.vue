@@ -3,6 +3,8 @@ import { Button as ShadcnButton } from '@/components/ui/button/index'
 import { Input as ShadcnInput } from '@/components/ui/input/index'
 import { Label as ShadcnLabel } from '@/components/ui/label/index'
 import { authService } from '@/services'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 
 export default {
   name: 'LoginForm',
@@ -11,30 +13,43 @@ export default {
     ShadcnInput,
     ShadcnLabel,
   },
-  data() {
-    return {
-      email: '',
-      password: '',
-    }
-  },
-  methods: {
-    async handleLogin() {
+  setup() {
+    const route = useRoute()
+    const warningMessage = ref('')
+
+    onMounted(() => {
+      const message = route.query.message as string
+      if (message) {
+        warningMessage.value = message
+      }
+    })
+
+    const email = ref('')
+    const password = ref('')
+
+    const handleLogin = async () => {
       try {
-        const email = this.email
-        const password = this.password
         const credentials = {
-          email,
-          password,
+          email: email.value,
+          password: password.value,
         }
         const response = await authService.login(credentials)
         console.log(response)
       } catch (error) {
         console.log(error)
       }
-    },
+    }
+
+    return {
+      email,
+      password,
+      handleLogin,
+      warningMessage,
+    }
   },
 }
 </script>
+
 <template>
   <div class="w-full h-screen lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
     <div class="flex items-center justify-center h-full">
@@ -44,6 +59,9 @@ export default {
           <p class="text-balance text-muted-foreground">
             Insira seu email e senha para acessar sua conta
           </p>
+        </div>
+        <div v-if="warningMessage" class="p-4 bg-yellow-100 text-yellow-800 rounded-md">
+          {{ warningMessage }}
         </div>
         <div class="grid gap-4">
           <div class="grid gap-2">
