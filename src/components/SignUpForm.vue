@@ -1,8 +1,10 @@
 <script lang="ts">
-import { Button } from '@/components/ui/button/index'
-import { Input } from '@/components/ui/input/index'
-import { Label } from '@/components/ui/label/index'
-import { ref } from 'vue'
+import { Button as ShadcnButton } from '@/components/ui/button/index'
+import { Input as ShadcnInput } from '@/components/ui/input/index'
+import { Label as ShadcnLabel } from '@/components/ui/label/index'
+import { ref, computed } from 'vue'
+import { authService } from '@/services'
+import { useRouter } from 'vue-router'
 
 interface FormData {
   name: string
@@ -11,14 +13,20 @@ interface FormData {
   confirmPassword: string
 }
 
+interface AuthResponse {
+  cause?: 'email_duplicate' | 'validation_error'
+  error?: string
+}
+
 export default {
   name: 'SignUpForm',
   components: {
-    Button,
-    Input,
-    Label,
+    ShadcnButton,
+    ShadcnInput,
+    ShadcnLabel,
   },
   setup() {
+    const router = useRouter()
     const formData = ref<FormData>({
       name: '',
       email: '',
@@ -26,13 +34,79 @@ export default {
       confirmPassword: '',
     })
 
-    const handleSubmit = () => {
-      console.log('Form submitted:', formData.value)
+    const showEmailError = ref(false)
+    const showPasswordError = ref(false)
+    const apiError = ref('')
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const isValidEmail = computed(() => {
+      return emailRegex.test(formData.value.email)
+    })
+
+    const passwordsMatch = computed(() => {
+      return formData.value.password === formData.value.confirmPassword
+    })
+
+    const isFormValid = computed(() => {
+      return (
+        formData.value.name.trim() !== '' &&
+        formData.value.email.trim() !== '' &&
+        formData.value.password.trim() !== '' &&
+        formData.value.confirmPassword.trim() !== '' &&
+        isValidEmail.value &&
+        passwordsMatch.value
+      )
+    })
+
+    const handleEmailBlur = () => {
+      showEmailError.value = true
+    }
+
+    const handlePasswordBlur = () => {
+      showPasswordError.value = true
+    }
+
+    const handleSignUp = async () => {
+      const handleErrors = {
+        email_duplicate: 'Email já cadastrado',
+        validation_error: 'Erro ao criar conta',
+      } as const
+      try {
+        if (!isFormValid.value) {
+          throw new Error('Preencha todos os campos corretamente')
+        }
+
+        const data = {
+          username: formData.value.name,
+          email: formData.value.email,
+          password: formData.value.password,
+        }
+        const response = (await authService.signUp(data)) as AuthResponse
+        if (response.cause && handleErrors[response.cause]) {
+          apiError.value = handleErrors[response.cause]
+          if (response.cause === 'email_duplicate') {
+            setTimeout(() => {
+              router.push('/')
+            }, 2000)
+          }
+          throw new Error(handleErrors[response.cause])
+        }
+      } catch (error) {
+        console.log(error, 'error')
+      }
     }
 
     return {
       formData,
-      handleSubmit,
+      handleSignUp,
+      passwordsMatch,
+      isValidEmail,
+      showEmailError,
+      showPasswordError,
+      handleEmailBlur,
+      handlePasswordBlur,
+      isFormValid,
+      apiError,
     }
   },
 }
@@ -48,42 +122,63 @@ export default {
             Preencha os dados abaixo para criar sua conta
           </p>
         </div>
-        <form @submit.prevent="handleSubmit" class="grid gap-4">
+        <form @submit.prevent="handleSignUp" class="grid gap-4">
           <div class="grid gap-2">
-            <Label for="name">Nome</Label>
-            <Input
+            <ShadcnLabel for="name">Nome</ShadcnLabel>
+            <ShadcnInput
               id="name"
               type="text"
               v-model="formData.name"
               placeholder="Seu nome completo"
               required
+              :class="{ 'border-red-500': apiError }"
             />
           </div>
           <div class="grid gap-2">
-            <Label for="email">Email</Label>
-            <Input
+            <ShadcnLabel for="email">Email</ShadcnLabel>
+            <ShadcnInput
               id="email"
               type="email"
               v-model="formData.email"
               placeholder="m@exemplo.com"
               required
+              :class="{ 'border-red-500': (showEmailError && !isValidEmail) || apiError }"
+              @blur="handleEmailBlur"
+            />
+            <p v-if="showEmailError && !isValidEmail" class="text-sm text-red-500">
+              Digite um email válido
+            </p>
+          </div>
+          <div class="grid gap-2">
+            <ShadcnLabel for="password">Senha</ShadcnLabel>
+            <ShadcnInput
+              id="password"
+              type="password"
+              v-model="formData.password"
+              required
+              :class="{ 'border-red-500': (showPasswordError && !passwordsMatch) || apiError }"
+              @blur="handlePasswordBlur"
             />
           </div>
           <div class="grid gap-2">
-            <Label for="password">Senha</Label>
-            <Input id="password" type="password" v-model="formData.password" required />
-          </div>
-          <div class="grid gap-2">
-            <Label for="confirmPassword">Confirmar Senha</Label>
-            <Input
+            <ShadcnLabel for="confirmPassword">Confirmar Senha</ShadcnLabel>
+            <ShadcnInput
               id="confirmPassword"
               type="password"
               v-model="formData.confirmPassword"
               required
+              :class="{ 'border-red-500': (showPasswordError && !passwordsMatch) || apiError }"
+              @blur="handlePasswordBlur"
             />
+            <p v-if="showPasswordError && !passwordsMatch" class="text-sm text-red-500">
+              As senhas devem ser iguais
+            </p>
           </div>
-          <Button type="submit" class="w-full">Criar Conta</Button>
-          <Button variant="outline" class="w-full">Criar Conta com Google</Button>
+          <p v-if="apiError" class="text-sm text-red-500 text-center">{{ apiError }}</p>
+          <ShadcnButton type="submit" class="w-full" :disabled="!isFormValid">
+            Criar Conta
+          </ShadcnButton>
+          <ShadcnButton variant="outline" class="w-full">Criar Conta com Google</ShadcnButton>
         </form>
         <div class="mt-4 text-center text-sm">
           Já tem uma conta?

@@ -6,7 +6,7 @@ interface LoginCredentials {
 }
 
 interface SignUpData {
-  name: string
+  username: string
   email: string
   password: string
 }
@@ -15,7 +15,7 @@ interface AuthResponse {
   token: string
   user: {
     id: string
-    name: string
+    username: string
     email: string
   }
 }
@@ -44,15 +44,11 @@ class AuthService {
 
   async signUp(data: SignUpData): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/register`, {
+      const response = await fetch(`${this.baseUrl}/signup`, {
         method: 'POST',
         headers,
         body: JSON.stringify(data),
       })
-
-      if (!response.ok) {
-        throw new Error('Falha no cadastro')
-      }
 
       return response.json()
     } catch (error) {
