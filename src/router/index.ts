@@ -1,31 +1,29 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '../views/Login.vue'
-import SignUp from '../views/SignUp.vue'
-import Dashboard from '../views/Dashboard.vue'
+import { authMiddleware } from '@/middleware/auth'
+import type { RouteRecordRaw } from 'vue-router'
+
+const routes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    name: 'Login',
+    component: () => import('@/views/Login.vue'),
+  },
+  {
+    path: '/signup',
+    name: 'SignUp',
+    component: () => import('@/views/SignUp.vue'),
+  },
+  {
+    path: '/dashboard',
+    name: 'UserDashboard',
+    component: () => import('@/views/Dashboard.vue'),
+    beforeEnter: authMiddleware,
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [
-    {
-      path: '/',
-      name: 'Login',
-      component: Login,
-    },
-    {
-      path: '/signup',
-      name: 'SignUp',
-      component: SignUp,
-    },
-    {
-      path: '/dashboard',
-      name: 'Dashboard',
-      component: Dashboard,
-    },
-    {
-      path: '/:pathMatch(.*)*',
-      redirect: '/',
-    },
-  ],
+  routes,
 })
 
 export default router

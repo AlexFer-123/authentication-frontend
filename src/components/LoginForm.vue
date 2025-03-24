@@ -5,7 +5,7 @@ import { Label as ShadcnLabel } from '@/components/ui/label/index'
 import { WaveAnimation } from '@/components/ui/wave'
 import { authService } from '@/services'
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 export default {
   name: 'LoginForm',
@@ -17,6 +17,7 @@ export default {
   },
   setup() {
     const route = useRoute()
+    const router = useRouter()
     const warningMessage = ref('')
 
     onMounted(() => {
@@ -36,6 +37,9 @@ export default {
           password: password.value,
         }
         const response = await authService.login(credentials)
+        localStorage.setItem('token', response.token)
+        router.push('/dashboard')
+
         console.log(response)
       } catch (error) {
         console.log(error)
