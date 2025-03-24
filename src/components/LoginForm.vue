@@ -48,12 +48,8 @@ export default {
 
         const response = await authService.login(credentials)
         localStorage.setItem('token', response.token)
-        if (response.cause === 'login_error') {
-          showError.value = true
-          errorMessage.value = response.error
-        } else {
-          router.push('/dashboard')
-        }
+
+        router.push('/dashboard')
       } catch (error) {
         showError.value = true
         const authError = error as AuthError
