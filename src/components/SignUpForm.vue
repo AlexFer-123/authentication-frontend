@@ -14,6 +14,18 @@ interface FormData {
   confirmPassword: string
 }
 
+type ErrorCause = 'email_duplicate' | 'validation_error'
+
+interface AuthResponse {
+  cause: ErrorCause
+  error: ErrorCause
+}
+
+const handleErrors: Record<ErrorCause, string> = {
+  email_duplicate: 'Email já cadastrado',
+  validation_error: 'Erro ao criar conta',
+}
+
 export default {
   name: 'SignUpForm',
   components: {
@@ -63,10 +75,6 @@ export default {
     }
 
     const handleSignUp = async () => {
-      const handleErrors = {
-        email_duplicate: 'Email já cadastrado',
-        validation_error: 'Erro ao criar conta',
-      }
       try {
         if (!isFormValid.value) {
           throw new Error('Preencha todos os campos corretamente')
@@ -77,7 +85,7 @@ export default {
           email: formData.value.email,
           password: formData.value.password,
         }
-        const response = await authService.signUp(data)
+        const response = (await authService.signUp(data)) as unknown as AuthResponse
         if (handleErrors[response.cause]) {
           if (response.cause === 'email_duplicate') {
             setTimeout(() => {
@@ -89,7 +97,7 @@ export default {
               })
             }, 2000)
           }
-          throw new Error(handleErrors[response.error])
+          throw new Error(handleErrors[response.cause])
         }
       } catch (error) {
         console.log(error, 'error')

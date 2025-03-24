@@ -22,7 +22,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="wave-wrapper" :style="{ width: `${size}rem`, height: `${size}rem` }">
+  <div class="wave-wrapper" :style="{ width: `100vw`, height: `${size}rem` }">
     <div class="wave one" :style="{ backgroundColor: color }"></div>
     <div class="wave two" :style="{ backgroundColor: secondaryColor }"></div>
     <div class="wave three" :style="{ backgroundColor: color }"></div>
