@@ -123,13 +123,13 @@ export default {
   <div
     class="w-full h-screen lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] relative overflow-hidden"
   >
-    <div class="absolute top-0 left-0 rotate-180">
-      <WaveAnimation :size="32" />
-    </div>
-    <div class="absolute bottom-0 right-0">
-      <WaveAnimation :size="32" />
-    </div>
     <div class="flex items-center justify-center h-full relative z-10">
+      <div class="absolute top-0 left-0 rotate-180 z-[-1]">
+        <WaveAnimation :size="32" />
+      </div>
+      <div class="absolute bottom-0 right-0 z-[-1]">
+        <WaveAnimation :size="32" />
+      </div>
       <div class="mx-auto grid w-[350px] gap-6">
         <div class="grid gap-2 text-center">
           <h1 class="text-3xl font-bold">Criar Conta</h1>
