@@ -7,6 +7,10 @@ import { authService } from '@/services'
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+interface AuthError {
+  message: string
+}
+
 export default {
   name: 'LoginForm',
   components: {
@@ -19,6 +23,8 @@ export default {
     const route = useRoute()
     const router = useRouter()
     const warningMessage = ref('')
+    const errorMessage = ref('')
+    const showError = ref(false)
 
     onMounted(() => {
       const message = route.query.message as string
@@ -32,17 +38,26 @@ export default {
 
     const handleLogin = async () => {
       try {
+        showError.value = false
+        errorMessage.value = ''
+
         const credentials = {
           email: email.value,
           password: password.value,
         }
+
         const response = await authService.login(credentials)
         localStorage.setItem('token', response.token)
-        router.push('/dashboard')
-
-        console.log(response)
+        if (response.cause === 'login_error') {
+          showError.value = true
+          errorMessage.value = response.error
+        } else {
+          router.push('/dashboard')
+        }
       } catch (error) {
-        console.log(error)
+        showError.value = true
+        const authError = error as AuthError
+        errorMessage.value = authError.message || 'Erro ao fazer login. Verifique suas credenciais.'
       }
     }
 
@@ -51,6 +66,8 @@ export default {
       password,
       handleLogin,
       warningMessage,
+      errorMessage,
+      showError,
     }
   },
 }
@@ -74,9 +91,7 @@ export default {
             Insira seu email e senha para acessar sua conta
           </p>
         </div>
-        <div v-if="warningMessage" class="p-4 bg-yellow-100 text-yellow-800 rounded-md">
-          {{ warningMessage }}
-        </div>
+
         <div class="grid gap-4">
           <div class="grid gap-2">
             <ShadcnLabel for="email">E-mail</ShadcnLabel>
@@ -86,6 +101,7 @@ export default {
               placeholder="m@example.com"
               required
               v-model="email"
+              :class="{ 'border-red-500': showError }"
             />
           </div>
           <div class="grid gap-2">
@@ -95,7 +111,13 @@ export default {
                 Esqueceu sua senha?
               </a>
             </div>
-            <ShadcnInput id="password" type="password" required v-model="password" />
+            <ShadcnInput
+              id="password"
+              type="password"
+              required
+              v-model="password"
+              :class="{ 'border-red-500': showError }"
+            />
           </div>
           <ShadcnButton type="submit" class="w-full" @click="handleLogin"> Entrar </ShadcnButton>
           <ShadcnButton variant="outline" class="w-full"> Entrar com Google </ShadcnButton>
